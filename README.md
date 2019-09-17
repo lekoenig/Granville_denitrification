@@ -1,4 +1,4 @@
-##Granville_denitrification
+# Granville_denitrification
 
 This repository contains the data and analyses for "Seasonal patterns of denitrification and N2O production in salt marshes" - Granville et al.  
   
