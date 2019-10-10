@@ -1,0 +1,74 @@
+Metadata for Compiled_Final_Data.csv
+
+Compiled_Final_Data.csv contains all of the data related to denitrification rates across vegetation zones and month during 2018 at the Barn Island Wildlife Management Area (BIWMA) in Stonington, CT.
+
+Contact: Kayleigh Granville (keg8fb@virginia.edu) and Ashley Helton (ashley.helton@uconn.edu)
+
+
+List of abbreviations and units organized by column: 
+
+SampleID: unique sample id given by salt marsh zone (LM, HM, PH) and replicate number (1-5).  
+
+Date: Sampling month  
+
+Tin: tin tare weight in units are grams (g)
+
+WetSoil: wet soil weight in units are grams (g)
+
+TinPlusWetSoil: units are grams (g)
+
+TinPlusDrySoil: units are grams (g)
+
+TinPlusAshedSoil: units are grams (g)
+
+Water: units are grams (g)
+
+DrySoil: units are grams (g)
+
+AshedSoil: units are grams (g)
+
+LOI: units are (g ashed / g dry)
+
+DWE:  units are (g dry / g wet)
+
+SoilMoistureFraction:
+
+NH4_ppmN: units (ppm N)
+
+NH4_Detect: NH4 ppm N with 1/2MDL, where units are ppm N
+
+ExtractedWetWeight: KCl extract soil weight, wet (g)
+
+ExtractedDryWeight: KCl extract soil weight, dry (g)
+
+NH4_mgN: units are mg N
+
+NH4_normalized: NH4 mg N per g dry soil
+
+WaterExtractedWetWeight: Water extract soil weight, wet (g)
+
+WaterExtractedDryWeight: Water extract soil weight, dry (g)
+
+SO4_ppm: units are X
+
+SO4_mg: units are X
+
+SO4_normalized: SO4 mg per g dry soil
+
+DenitRate: Denit (ng N / hr / g dry soil)
+
+N2ORate: N2O (ng / hr / g dry soil)
+
+N2OYield: unitless
+
+Notes_N2OYield
+
+Lab_notes
+
+
+
+
+
+
+
+
