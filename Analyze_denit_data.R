@@ -3,17 +3,17 @@
 
 
 ## Load packages:
-library(dplyr)     # general data cleaning and manipulation
-library(ggplot2)   # create plots
-library(cowplot)   # formatting plots created using ggplot
-library(rnoaa)     # r package for interfacing with NCDC climate datasets (need API token to access noaa data) 
-library(nlme)      # linear mixed effects models
-library(lsmeans)   # posthoc multiple comparisons on linear mixed effects models
-library(forcats)   # package for categorical variables (used to order factor variables)
-library(car)       # used to check ANOVA assumptions
-library(lubridate) # deal with dates and times
-library(RcppRoll)  # calculate rolling summary stats
-
+library(dplyr)         # general data cleaning and manipulation
+library(ggplot2)       # create plots
+library(cowplot)       # formatting plots created using ggplot
+library(rnoaa)         # r package for interfacing with NCDC climate datasets (need API token to access noaa data) 
+library(nlme)          # linear mixed effects models
+library(lsmeans)       # posthoc multiple comparisons on linear mixed effects models
+library(forcats)       # package for categorical variables (used to order factor variables)
+library(car)           # used to check ANOVA assumptions
+library(lubridate)     # deal with dates and times
+library(RcppRoll)      # calculate rolling summary stats
+library(dataRetrieval) # r package for interfacing with USGS streamflow data
 
 ## ------------------------------ Read in raw data ----------------------------- ##
   
@@ -70,8 +70,7 @@ library(RcppRoll)  # calculate rolling summary stats
 
   # Join precip data records to calculate average precipitation for the local "region" around Barn Island:
   out <- left_join(out1c$data[,c("date","datatype","station","precip_mm")], out1b$data[,c("date","datatype","station","precip_mm")], by='date') %>%
-  left_join(., out1$data[,c("date","datatype","station","precip_mm")], by='date') 
-
+          left_join(., out1$data[,c("date","datatype","station","precip_mm")], by='date') 
   out$avg_precip_mm <- apply(out[,c("precip_mm.x","precip_mm.y","precip_mm")],1,function(x) mean(x,na.rm=T))
 
   # Calculate 7-day, 10-day, 14-day, 21-day, and 30-day average antecedent rainfall for Barn Island:
@@ -91,9 +90,6 @@ library(RcppRoll)  # calculate rolling summary stats
   out3$data$MinTemp_F <- (out3$data$MinTemp_C*9/5)+32
   out3$data$date <- as.Date(out3$data$date)
 
-  WesterlyRI.Tmax <- out2$data
-  WesterlyRI.Tmin <- out3$data
-
   # Join climate data:
   Table1 <- data.frame(Month.N = c("May","June","July","August","October"),
                      Date = c(as.Date("05/11/2018","%m/%d/%Y"),
@@ -104,14 +100,62 @@ library(RcppRoll)  # calculate rolling summary stats
   Table1 <- left_join(Table1,StoningtonCT.precip[,c("date","datatype.x","avg_precip_mm","roll_2day","roll_7day","roll_10day","roll_14day","roll_21day","roll_30day")],by=c("Date"="date"))
   names(Table1)[names(Table1) == 'datatype.x'] <- 'datatype'
 
-  Table1 <- left_join(Table1,WesterlyRI.Tmin[,c("date","datatype","station","MinTemp_C","MinTemp_F")],by=c("Date"="date"))
-  Table1 <- left_join(Table1,WesterlyRI.Tmax[,c("date","datatype","MaxTemp_C","MaxTemp_F")],by=c("Date"="date"))
+  Table1 <- left_join(Table1,out3$data[,c("date","datatype","station","MinTemp_C","MinTemp_F")],by=c("Date"="date"))
+  Table1 <- left_join(Table1,out2$data[,c("date","datatype","MaxTemp_C","MaxTemp_F")],by=c("Date"="date"))
   Table1$Month.N <- factor(Table1$Month.N,levels = c("May","June","July","August","October"))
+
+  # Download tidal height data from NOAA Tides and Currents station 8461490: New London, Thames River, CT:
+  tide.dat <- coops_search(begin_date = 20180401, end_date = 20181031, station_name = 8461490,
+               datum = "MLLW", units = "metric", 
+               #product = "monthly_mean",
+               product = "hourly_height",
+               time_zone = "lst",
+               application = "rnoaa")
+  tide.metadata <- do.call("rbind",tide.dat$metadata)
+  tide.dat <- tide.dat$data
+  tide.dat$date <- as.Date(tide.dat$t)
+  tide.dat$month <- month(tide.dat$date)
+  
+  # Convert tidal data to daily means/max:
+  tide.dat <- tide.dat %>% group_by(date) %>% summarize(meantide = mean(v,na.rm=T),
+                                                     maxtide = max(v,na.rm=T))
+  
+  # Calculate 7-day mean tide:
+  tide.dat <- tide.dat %>% mutate(meantide = RcppRoll::roll_mean(meantide,1,align="right",fill=NA),
+                                  meantide_7day = RcppRoll::roll_mean(meantide,7,align="right",fill=NA),
+                                  meantide_14day = RcppRoll::roll_mean(meantide,14,align="right",fill=NA),
+                                  maxtide_7day = RcppRoll::roll_max(maxtide,7,align="right",fill=NA),
+                                  maxtide_14day = RcppRoll::roll_max(maxtide,14,align="right",fill=NA))
+  
+  # Join tidal data with other environmental data:
+  Table1 <- left_join(Table1,tide.dat[,c("date","meantide","maxtide","meantide_7day","meantide_14day","maxtide_7day","maxtide_14day")],by=c("Date"="date"))
 
   # Save climate data:
   write.csv(Table1,"./output/Table1_EnvironmentalConditions.csv",row.names = FALSE)
   saveRDS(Table1,"./output/Table1_EnvironmentalConditions.rds")
+  
+  
+  # Download USGS streamflow data for site 01118500, PAWCATUCK RIVER AT WESTERLY, RI:
+  siteNumber  <-'01118500'
+  siteINFO <- readNWISsite(siteNumber)
+  parameterCd <-c('00060','00065')
+  startDate   <-"2018-05-01"
+  endDate     <-"2018-10-31"
+  flow.dat   <- readNWISuv(siteNumber, parameterCd,startDate, endDate,tz="America/New_York") # USGS data stored in Eastern U.S. local time
+  flow.dat   <- renameNWISColumns(flow.dat)
+  flow.dat$date <- as.Date(flow.dat$dateTime)
+  
+  # convert flow data from cfs to L/s:
+  flow.dat$Flow_m3s <- flow.dat$Flow_Inst*0.0283168
+  
+  # calculate mean daily flow:
+  flow.dat.daily <- flow.dat %>% group_by(date) %>% summarize(totalvolume_m3 = (sum(Flow_m3s)*15*60))
+  
+  # convert flow (m3/s) to runoff (m/d)
+  flow.dat.daily$runoff_mmd <- (flow.dat.daily$totalvolume_m3/(siteINFO$drain_area_va*2.58999*1000*1000))*1000
+    
 
+ 
   
 ## ------------------------------ Plot the vegetation cover by vegetation zone ----------------------------- ##
   
