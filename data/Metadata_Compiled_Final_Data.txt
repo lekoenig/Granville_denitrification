@@ -2,24 +2,24 @@ Metadata for Compiled_Final_Data.csv
 
 Compiled_Final_Data.csv contains all of the data related to denitrification rates across vegetation zones and month during 2018 at the Barn Island Wildlife Management Area (BIWMA) in Stonington, CT.
 
-Contact: Kayleigh Granville (keg8fb@virginia.edu) and Ashley Helton (ashley.helton@uconn.edu)
+Corresponding author: Ashley Helton (ashley.helton@uconn.edu)
 
 
 List of abbreviations and units organized by column: 
 
-SampleID: unique sample id given by salt marsh zone (LM, HM, PH) and replicate number (1-5).  
+Sample ID: unique sample id given by salt marsh zone (LM, HM, PH) and replicate site number (1-5).  
 
 Date: Sampling month  
 
-Tin: tin tare weight in units are grams (g)
+Tin: tin tare weight, units are grams (g)
 
-WetSoil: wet soil weight in units are grams (g)
+WetSoil: wet soil weight, units are grams (g)
 
-TinPlusWetSoil: units are grams (g)
+Tin + Wet Soil: weight of tin plus wet soil, units are grams (g)
 
-TinPlusDrySoil: units are grams (g)
+Tin + Dry Soil: weight of tin plus oven-dried soil, units are grams (g)
 
-TinPlusAshedSoil: units are grams (g)
+Tin + AshedSoil: weight of tin plus ashed soil, units are grams (g)
 
 Water: units are grams (g)
 
@@ -27,43 +27,49 @@ DrySoil: units are grams (g)
 
 AshedSoil: units are grams (g)
 
-LOI: units are (g ashed / g dry)
+LOI: loss on ignition, ratio of ashed soil weight to dried soil weight, units are (g ashed / g dry)
 
-DWE:  units are (g dry / g wet)
+DWE: dry weight equivalent, ratio of dried soil weight to wet soil weight, units are (g dry / g wet)
 
-SoilMoistureFraction:
+SoilMoistureFraction: Fraction soil water content, proportional loss in soil weight between dried soils and wet soils, unitless  
 
-NH4_ppmN: units (ppm N)
+Belowground Biomass Weight: oven-dried root biomass from soil cores, units are grams (g)
 
-NH4_Detect: NH4 ppm N with 1/2MDL, where units are ppm N
+Belowground Biomass: root biomass standardized by the area of the soil core, units are (g/m^2)
 
-ExtractedWetWeight: KCl extract soil weight, wet (g)
+NH4 ppm N: soil ammonium, NH4, units (ppm N)
 
-ExtractedDryWeight: KCl extract soil weight, dry (g)
+NH4 ppm N with 1/2MDL: NH4 ppm N where values below 0.46 ppm N were set to 1/2MDL (0.23 ppm N), where units are (ppm N)
 
-NH4_mgN: units are mg N
+KCl extract soil weight, wet: KCl extract soil weight, wet (g)
 
-NH4_normalized: NH4 mg N per g dry soil
+KCl extract soil weight, dry: KCl extract soil weight, dry (g)
 
-WaterExtractedWetWeight: Water extract soil weight, wet (g)
+NH4 mg N: soil ammonium, NH4, units are mg N
 
-WaterExtractedDryWeight: Water extract soil weight, dry (g)
+NH4 mg N per g dry soil: soil ammonium, NH4, standardized by the weight of dry soil, units are (mg N per g dry soil)  
 
-SO4_ppm: units are X
+NH4 mg N per g wet soil: soil ammonium, NH4, standardized by the weight of field-moist soils, units are (mg N per g wet soil)  
 
-SO4_mg: units are X
+Water extract soil weight, wet: Water extract soil weight, wet (g)
 
-SO4_normalized: SO4 mg per g dry soil
+Water extract soil weight, dry: field-moist water-extracted soil weight multiplied by the soil dry weight equivalent, units are grams (g)
 
-DenitRate: Denit (ng N / hr / g dry soil)
+SO4 ppm: soil sulfate, SO42-, units are ppm SO42-
 
-N2ORate: N2O (ng / hr / g dry soil)
+SO4 mg: soil sulfate, SO42-, units are mg SO42-
 
-N2OYield: unitless
+SO4 mg per g dry soil: soil sulfate, SO42-, standardized by the weight of dry soil, units are (mg SO42- g dry soil)  
 
-Notes_N2OYield
+SO4 mg per g wet soil: soil sulfate, SO42-, standardized by the weight of field-moist soils, units are (mg SO42- g wet soil)
 
-Lab_notes
+Denit: Potential denitrification rate, units are (ng N/hr/g dry soil)
+
+N2O: Nitrous oxide production rate, units are (ng/hr/g dry soil)
+
+N2O yield: the ratio of nitrous oxide (N2O) production to N2O+N2 production, unitless
+
+Notes on N2O yield: comments regarding data QA/QC of data from laboratory N cycling assays
 
 
 
