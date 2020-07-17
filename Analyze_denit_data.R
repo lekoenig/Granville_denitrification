@@ -212,8 +212,8 @@ token <- "X"
   veg.dat.long$Site <- factor(veg.dat.long$Site, levels = c("LM1","LM2","LM3","LM4","LM5",
                                                             "HM1","HM2","HM3","HM4","HM5",
                                                             "PH1","PH2","PH3","PH4","PH5"))
-  veg.dat.long$Species <- factor(veg.dat.long$Species,levels = c("Bare_scaled","Other_scaled","Litter_scaled","Distichlis_scaled","Alter_scaled","Patens_scaled","Phrag_scaled"),
-                                                      labels = c("Bare","Other","Litter","Distichlis","Alter","Patens","Phrag"))
+  veg.dat.long$Species <- factor(veg.dat.long$Species,levels = c("Bare_scaled","Litter_scaled","Other_scaled","Distichlis_scaled","Alter_scaled","Patens_scaled","Phrag_scaled"),
+                                                      labels = c("Bare","Litter","Other","Distichlis","Alter","Patens","Phrag"))
   veg.dat.long$Site2 <- substring(veg.dat.long$Site, first=3)
   veg.dat.long <- veg.dat.long %>% 
                   mutate(VegZone2 = case_when(
@@ -223,7 +223,7 @@ token <- "X"
   veg.dat.long$VegZone2 <- factor(veg.dat.long$VegZone2,levels=c("Low Marsh","High Marsh", "Phragmites"))
   
   # Plot the vegetation composition across each of the sub-plots:
-    my.veg.palette <-  c("#999999", "#E69F00", "#56B4E9",  "#F0E442","#009E73", "#0072B2", "#D55E00",  "#009E73")
+    my.veg.palette <-  c("#999999", "#56B4E9", "#E69F00", "#F0E442","#009E73", "#0072B2", "#D55E00",  "#009E73")
     
     # open jpeg file
     jpeg("./output/figures/Figure2.jpg", width = 8, height = 4.7,units = "in",res = 350)
@@ -232,7 +232,7 @@ token <- "X"
     vegplot.indiv <- veg.dat.long %>% ggplot() + 
       geom_bar(aes(y = Percent_cover, x = Site2, fill = Species),stat="identity")+
       scale_fill_manual(values = my.veg.palette)+    
-      labs(y=expression(Percent~cover),x="Site")+
+      labs(y=expression(Percent~cover),x="Plot")+
       facet_grid(. ~ VegZone2)+
       theme_cowplot()+
       theme(legend.position="right",
@@ -249,7 +249,31 @@ token <- "X"
     # close jpeg file
     dev.off()
   
-
+  # Plot mean vegetation composition across each of the zones (averaged across all of the sub-plots)
+    
+    # open jpeg file
+    jpeg("./output/figures/Figure2_subplot_means.jpg", width = 5.5, height = 4.7,units = "in",res = 350)
+    
+    # create plot
+    vegplot.means <-  veg.dat.long %>% group_by(VegZone, Species) %>% summarize(Mean_cover = mean(Percent_cover,na.rm=T)) %>% 
+      ggplot() + geom_bar(aes(y = Mean_cover, x = VegZone, fill = Species),stat="identity")+
+      scale_fill_manual(values = my.veg.palette)+
+      labs(y=expression(Average~percent~cover~across~the~"5"~plots))+
+      labs(y=expression(Mean~percent~cover),x="Salt marsh zone")+
+      theme_cowplot()+
+      theme(legend.position="right",
+            axis.title = element_text(size=16),
+            axis.text = element_text(size=14),
+            legend.text = element_text(size=13),
+            legend.key.size = unit(1.5,"line"),
+            legend.title = element_text(size=15),
+            axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
+            strip.text.x = element_text(size=14,margin = margin(.1, 0, .1, 0, "cm")))
+    print(vegplot.means) 
+    
+    # close jpeg file
+    dev.off()
+    
     
 ## ============================================================================= ## 
 ##                   N CYCLING ACROSS SEASONS AND SALT MARSH ZONES               ##
@@ -470,8 +494,11 @@ token <- "X"
                group_by(VegZone) %>%
                do(fit = lm(log(N2ORate)~log(DenitRate),data= .))
   #Nreg.byveg.coef = Nreg.byveg %>% tidy(fit)
-  Nreg.byveg.coef = Nreg.byveg %>% glance(fit)  # include r-squared values
+  Nreg.byveg.coef = Nreg.byveg %>% glance(fit)  
+  # get r-squared values:
   print(Nreg.byveg.coef)
+  # get slopes:
+  print(Nreg.byveg$fit)
   
   # ANCOVA with potential denitrification as covariate and salt marsh zone as categorical independent variable:
   options(contrasts = c("contr.treatment", "contr.poly"))
