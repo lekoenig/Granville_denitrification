@@ -110,7 +110,7 @@ token <- "X"
          left_join(., out1$data[,c("date","datatype","station","precip_mm")], by='date') 
   out$avg_precip_mm <- apply(out[,c("precip_mm.x","precip_mm.y","precip_mm")],1,function(x) mean(x,na.rm=T))
   
-  # Calculate 7-day, 10-day, 14-day, 21-day, and 30-day average antecedent rainfall for Barn Island:
+  # Calculate 7-day, 10-day, 14-day, 21-day, and 30-day average antecedent rainfall totals for Barn Island "region":
   StoningtonCT.precip <- out %>% mutate(roll_2day = RcppRoll::roll_sum(avg_precip_mm,2,align="right",fill=NA),
                                         roll_7day = RcppRoll::roll_sum(avg_precip_mm,7,align="right",fill=NA),
                                         roll_10day = RcppRoll::roll_sum(avg_precip_mm,10,align="right",fill=NA),
@@ -449,10 +449,11 @@ token <- "X"
   
   # Compare effect size:
   summary(posthoc.n2oyield.emm,type="response")
-
+  plot(posthoc.n2oyield.emm,type = "response",comparisons = TRUE)
+  
   # Calculate marginal and conditional r2:
   piecewiseSEM::rsquared(n2oyield)
-  
+
 ## Check model assumptions:
   par(mfrow=c(2,2),mar=c(3.0,1.8,1.8,1.0),oma=c(2,1.5,1.5,1.5))
   res.n2oyield <- residuals(n2oyield)
@@ -464,6 +465,12 @@ token <- "X"
   car::leveneTest(log(N2O.yield+0.1) ~ unique.trt, data = data)    # test assumption of homogeneity of variance
   
   # Log transformation improves the normality and homoscedasticity of the model residuals
+  
+## Means and standard error from raw data:
+  data %>% 
+    group_by(VegZone) %>% select(VegZone,N2O.yield) %>%
+    summarise_each(funs(mean(., na.rm=T), n = sum(!is.na(.)), se = sd(., na.rm=T)/sqrt(sum(!is.na(.)))), N2O.yield)  
+  
   
 ## Look at N2O yields as scatterplots between potential denitrification rate and N2O production rate:
   
@@ -512,6 +519,8 @@ token <- "X"
   hist(res.Nrega,freq=FALSE)
   plot(fitted(Nreg.ancova),residuals(Nreg.ancova))
   shapiro.test(res.Nrega)                          # test assumption of normality
+  
+  
   
   
 ## ============================================================================= ## 
@@ -769,7 +778,7 @@ token <- "X"
   
   
 ## ============================================================================= ## 
-##                          FIGURE 3: N CYCLING RATES                            ##
+##                    FIGURE 3: N CYCLING RATES (now figure 4)                   ##
 ## ============================================================================= ## 
   
   # Rename variables for figure labels:
@@ -782,7 +791,9 @@ token <- "X"
   fig3.potdenit <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=DenitRate),alpha=.7)+
     facet_grid(. ~ VegZone2)+
-    scale_y_log10()+
+    scale_y_continuous(
+      trans = "log",
+      breaks = c(30,10,100,300,1000,3000)) +
     labs(y=expression(atop(Potential~denitrification, (ng~N~"/"~hr~"/"~g~dry~soil))),
          x="Month")+
     theme_bw() +
@@ -800,7 +811,9 @@ token <- "X"
   fig3.n2oprod <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=(N2ORate+1)),alpha=.7)+
     facet_grid(. ~ VegZone2)+
-    scale_y_log10()+
+    scale_y_continuous(
+      trans = "log",
+      breaks = c(1,10,100,1000)) +
     labs(y=expression(atop(paste(N[2],"O")~production, (ng~N~"/"~hr~"/"~g~dry~soil))),
          x="Month")+
     theme_bw() +
@@ -820,7 +833,9 @@ token <- "X"
   fig3.n2oyield <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=(N2O.yield+0.01)),alpha=.7)+
     facet_grid(. ~ VegZone2)+
-    scale_y_log10()+
+    scale_y_continuous(
+      trans = "log",
+      breaks = c(0.01,0.10,1)) +    
     labs(y=expression(paste(N[2],"O")~yield),
          x="Month")+
     theme_bw() +
@@ -837,14 +852,14 @@ token <- "X"
   
   fig3 <- fig3.potdenit / fig3.n2oprod / fig3.n2oyield
   
-  jpeg("./output/figures/Figure3.jpg",width = 6.75,height=6.75,units = "in",res=300)
+  jpeg("./output/figures/Figure4.jpg",width = 6.75,height=6.75,units = "in",res=300)
   print(fig3)
   dev.off()
   
   
 
 ## ============================================================================= ## 
-##                          FIGURE 4: SOIL CONDITIONS                            ##
+##                    FIGURE 4: SOIL CONDITIONS (now Figure 3)                   ##
 ## ============================================================================= ##    
   
   fig4.moisture <- ggplot(data) + 
@@ -882,7 +897,9 @@ token <- "X"
   fig4.nh4 <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=NH4_wet_normalized),alpha=.7)+
     facet_grid(. ~ VegZone2)+
-    scale_y_log10()+
+    scale_y_continuous(
+      trans = "log",
+      breaks = c(0.003,0.010,0.030)) +
     labs(x="Month",y=expression(atop(Ammonium~concentration, (mg~NH[4]^"+"~"/"~g~wet~soil))))+
     theme_bw() +
     theme(legend.position="right",
@@ -897,7 +914,7 @@ token <- "X"
   
   fig4 <- fig4.moisture / fig4.so4 / fig4.nh4
   
-  jpeg("./output/figures/Figure4.jpg",width = 6.75,height=6.75,units = "in",res=300)
+  jpeg("./output/figures/Figure3.jpg",width = 6.75,height=6.75,units = "in",res=300)
   print(fig4)
   dev.off()
 
