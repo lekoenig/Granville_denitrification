@@ -541,7 +541,7 @@ token <- "X"
       labs(x="Month",y=expression(Antecedent~precip~(mm))),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=LOI))+geom_point(aes(x=Date,y=LOI,color=VegZone))+theme_bw(),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=SO4_wet_normalized))+geom_point(aes(x=Date,y=SO4_wet_normalized,color=VegZone))+theme_bw()+theme(legend.position="none"),
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4.mg.N.per.g.dry.soil))+geom_point(aes(x=Date,y=NH4.mg.N.per.g.dry.soil,color=VegZone))+theme_bw()+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4_wet_normalized))+geom_point(aes(x=Date,y=NH4_wet_normalized,color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=Soil.Moisture.Fraction))+geom_point(aes(x=Date,y=Soil.Moisture.Fraction,color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=Belowground.Biomass.Weight..g.))+geom_point(aes(x=Date,y=Belowground.Biomass.Weight..g.,color=VegZone))+labs(y=expression(Belowground~biomass~(g)))+theme_bw()+theme(legend.position="none"),
     ncol=2
@@ -777,9 +777,12 @@ token <- "X"
   # Q-Q plot looks OK, and there's no obvious patterning in the residuals plot
   
   
+
+  
+
 ## ============================================================================= ## 
-##                    FIGURE 3: N CYCLING RATES (now figure 4)                   ##
-## ============================================================================= ## 
+##                            FIGURE 3: SOIL CONDITIONS                          ##
+## ============================================================================= ##    
   
   # Rename variables for figure labels:
   data$Month2 <- factor(data$Date,levels = c("May","June","July","August","October"),
@@ -787,82 +790,7 @@ token <- "X"
   data$VegZone2 <- factor(data$VegZone,levels=c("LM","HM","PH"),
                           labels=c("Low Marsh","High Marsh", "Phragmites"))
   
-  # Create denitrification panels:
-  fig3.potdenit <- ggplot(data) + 
-    geom_boxplot(aes(x=Month2,y=DenitRate),alpha=.7)+
-    facet_grid(. ~ VegZone2)+
-    scale_y_continuous(
-      trans = "log",
-      breaks = c(30,10,100,300,1000,3000)) +
-    labs(y=expression(atop(Potential~denitrification, (ng~N~"/"~hr~"/"~g~dry~soil))),
-         x="Month")+
-    theme_bw() +
-    theme(legend.position="right",
-          axis.title = element_text(size=11),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.text = element_text(size=10,colour = "black"),
-          #axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
-          axis.title.x = element_blank(),
-          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
-          strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")))
-  
-  # Create N2O production panels:
-  fig3.n2oprod <- ggplot(data) + 
-    geom_boxplot(aes(x=Month2,y=(N2ORate+1)),alpha=.7)+
-    facet_grid(. ~ VegZone2)+
-    scale_y_continuous(
-      trans = "log",
-      breaks = c(1,10,100,1000)) +
-    labs(y=expression(atop(paste(N[2],"O")~production, (ng~N~"/"~hr~"/"~g~dry~soil))),
-         x="Month")+
-    theme_bw() +
-    theme(legend.position="right",
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.title = element_text(size=11),
-          axis.text = element_text(size=10,colour = "black"),
-          #axis.text.x = element_blank(),
-          axis.title.x = element_blank(),
-          #axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
-          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
-          #strip.text.x = element_text(size=14,margin = margin(.1, 0, .1, 0, "cm")))
-          strip.text.x = element_blank())
-  
-  # Create N2O yield panels:
-  fig3.n2oyield <- ggplot(data) + 
-    geom_boxplot(aes(x=Month2,y=(N2O.yield+0.01)),alpha=.7)+
-    facet_grid(. ~ VegZone2)+
-    scale_y_continuous(
-      trans = "log",
-      breaks = c(0.01,0.10,1)) +    
-    labs(y=expression(paste(N[2],"O")~yield),
-         x="Month")+
-    theme_bw() +
-    theme(legend.position="right",
-          axis.title = element_text(size=11),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.text = element_text(size=10,colour = "black"),
-          axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
-          #axis.title.x = element_blank(),
-          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
-          #strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")),
-          strip.text.x = element_blank())
-  
-  fig3 <- fig3.potdenit / fig3.n2oprod / fig3.n2oyield
-  
-  jpeg("./output/figures/Figure4.jpg",width = 6.75,height=6.75,units = "in",res=300)
-  print(fig3)
-  dev.off()
-  
-  
-
-## ============================================================================= ## 
-##                    FIGURE 4: SOIL CONDITIONS (now Figure 3)                   ##
-## ============================================================================= ##    
-  
-  fig4.moisture <- ggplot(data) + 
+  fig3.moisture <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=Soil.Moisture.Fraction),alpha=.7)+
     facet_grid(. ~ VegZone2)+
     coord_cartesian(ylim=c(0.5,1))+
@@ -879,7 +807,7 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")))
   
-  fig4.so4 <- ggplot(data) + 
+  fig3.so4 <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=SO4_wet_normalized),alpha=.7)+
     facet_grid(. ~ VegZone2)+
     labs(x="Month",y=expression(atop(Sulfate~concentration, (mg~SO[4]^2^"-"~"/"~g~wet~soil))))+
@@ -894,12 +822,10 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_blank())
   
-  fig4.nh4 <- ggplot(data) + 
+  fig3.nh4 <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=NH4_wet_normalized),alpha=.7)+
     facet_grid(. ~ VegZone2)+
-    scale_y_continuous(
-      trans = "log",
-      breaks = c(0.003,0.010,0.030)) +
+    #scale_y_continuous(trans = "log",breaks = c(0.003,0.010,0.030)) +
     labs(x="Month",y=expression(atop(Ammonium~concentration, (mg~NH[4]^"+"~"/"~g~wet~soil))))+
     theme_bw() +
     theme(legend.position="right",
@@ -912,9 +838,77 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_blank())
   
-  fig4 <- fig4.moisture / fig4.so4 / fig4.nh4
+  fig3 <- fig3.moisture / fig3.so4 / fig3.nh4
   
   jpeg("./output/figures/Figure3.jpg",width = 6.75,height=6.75,units = "in",res=300)
-  print(fig4)
+  print(fig3)
   dev.off()
 
+
+## ============================================================================= ## 
+##                            FIGURE 4: N CYCLING RATES                          ##
+## ============================================================================= ## 
+  
+  # Create denitrification panels:
+  fig4.potdenit <- ggplot(data) + 
+    geom_boxplot(aes(x=Month2,y=DenitRate),alpha=.7)+
+    facet_grid(. ~ VegZone2)+
+    #scale_y_continuous(trans = "log",breaks = c(30,10,100,300,1000,3000)) +
+    labs(y=expression(atop(Potential~denitrification, (ng~N~"/"~hr~"/"~g~dry~soil))),
+         x="Month")+
+    theme_bw() +
+    theme(legend.position="right",
+          axis.title = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(size=10,colour = "black"),
+          #axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
+          strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")))
+  
+  # Create N2O production panels:
+  fig4.n2oprod <- ggplot(data) + 
+    geom_boxplot(aes(x=Month2,y=N2ORate),alpha=.7)+
+    facet_grid(. ~ VegZone2)+
+    #scale_y_continuous(trans = "log",breaks = c(1,10,100,1000)) +
+    labs(y=expression(atop(paste(N[2],"O")~production, (ng~N~"/"~hr~"/"~g~dry~soil))),
+         x="Month")+
+    theme_bw() +
+    theme(legend.position="right",
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.title = element_text(size=11),
+          axis.text = element_text(size=10,colour = "black"),
+          #axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          #axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
+          #strip.text.x = element_text(size=14,margin = margin(.1, 0, .1, 0, "cm")))
+          strip.text.x = element_blank())
+  
+  # Create N2O yield panels:
+  fig4.n2oyield <- ggplot(data) + 
+    geom_boxplot(aes(x=Month2,y=N2O.yield),alpha=.7)+
+    facet_grid(. ~ VegZone2)+
+    #scale_y_continuous(trans = "log",breaks = c(0.01,0.10,1)) +    
+    labs(y=expression(paste(N[2],"O")~yield),
+         x="Month")+
+    theme_bw() +
+    theme(legend.position="right",
+          axis.title = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(size=10,colour = "black"),
+          axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0)),
+          #axis.title.x = element_blank(),
+          axis.title.y = element_text(margin = margin(t = 0, r = 6, b = 0, l = 0)),
+          #strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")),
+          strip.text.x = element_blank())
+  
+  fig4 <- fig4.potdenit / fig4.n2oprod / fig4.n2oyield
+  
+  jpeg("./output/figures/Figure4.jpg",width = 6.75,height=6.75,units = "in",res=300)
+  print(fig4)
+  dev.off()
+  
