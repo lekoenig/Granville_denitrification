@@ -1,5 +1,5 @@
 ## The objective of this script is to analyze BIWMA salt marsh denitrification data collected in 2018 (Kayleigh Granville)
-## Last updated 3 April 2020 by LE Koenig
+## Last updated 11 December 2020 by LE Koenig
 
 
 ## Load packages:
@@ -226,7 +226,7 @@ token <- "X"
     my.veg.palette <-  c("#999999", "#56B4E9", "#E69F00", "#F0E442","#009E73", "#0072B2", "#D55E00",  "#009E73")
     
     # open jpeg file
-    jpeg("./output/figures/Figure2.jpg", width = 8, height = 4.7,units = "in",res = 350)
+    jpeg("./output/figures/Figure3.jpg", width = 8, height = 4.7,units = "in",res = 350)
     
     # create plot
     vegplot.indiv <- veg.dat.long %>% ggplot() + 
@@ -252,7 +252,7 @@ token <- "X"
   # Plot mean vegetation composition across each of the zones (averaged across all of the sub-plots)
     
     # open jpeg file
-    jpeg("./output/figures/Figure2_subplot_means.jpg", width = 5.5, height = 4.7,units = "in",res = 350)
+    jpeg("./output/figures/Figure3_subplot_means.jpg", width = 5.5, height = 4.7,units = "in",res = 350)
     
     # create plot
     vegplot.means <-  veg.dat.long %>% group_by(VegZone, Species) %>% summarize(Mean_cover = mean(Percent_cover,na.rm=T)) %>% 
@@ -287,13 +287,13 @@ token <- "X"
 ## Plot data
     
   # Plot potential denitrification rates, including possible main (Month, VegZone), random (SampleID), and interactive effects. 
-  # Note y-axis is presented on a log-scale.  
+  # Note y-axis is presented on a linear scale.  
   plot_grid(
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=DenitRate))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=DenitRate))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=DenitRate,color=VegZone))+scale_y_log10()+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=DenitRate))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=DenitRate))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=DenitRate,color=VegZone))+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
     # interaction plot:
-    ggplot(data, aes(x = Date, y = log10(DenitRate), color = VegZone)) + geom_boxplot(size=0.5) +
+    ggplot(data, aes(x = Date, y = DenitRate, color = VegZone)) + geom_boxplot(size=0.5) +
       stat_summary(fun = mean, geom = "line", aes(group = VegZone), size = 1.2) + theme_bw() +
       scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")),
       ncol=2,nrow=2,align="h")
@@ -357,13 +357,13 @@ token <- "X"
 ## Plot data
   
   # Plot N2O production rates, including possible main (Month, VegZone), random (SampleID), and interactive effects. 
-  # Note y-axis is presented on a log-scale
+  # Note y-axis is presented on a linear scale
   plot_grid(
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=(N2ORate+1)))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=(N2ORate+1)))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=(N2ORate+1),color = VegZone))+scale_y_log10()+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=N2ORate))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=N2ORate))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=N2ORate,color = VegZone))+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
     # interaction plot:
-    ggplot(data, aes(x = Date, y = log10(N2ORate+1), color = VegZone)) + geom_boxplot(size=0.5) +
+    ggplot(data, aes(x = Date, y = N2ORate, color = VegZone)) + geom_boxplot(size=0.5) +
       stat_summary(fun = mean, geom = "line", aes(group = VegZone), size = 1.2) + theme_bw() +
       scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")),
     ncol=2,nrow=2,align="h")
@@ -375,7 +375,7 @@ token <- "X"
   
   #Two-way ANOVA with SampleID (i.e. sub-plot) as a random effect, assuming that samples from the same sampleID are correlated over time. 
   #Note that N2O production data were natural log(x+1)-transformed prior to analysis.
-  n2o = lme4::lmer(log(N2ORate+1) ~ Date*VegZone + (1|Sample.ID),data=data,REML=TRUE)
+  n2o = lme4::lmer(log(N2ORate+1) ~ Date*VegZone + (1|Sample.ID),data=data,REML=FALSE)
   anova(n2o)
   # run n2o model again using lmerTest Satterthwaite approximation of degrees of freedom in lmerTest:
   options(contrasts = c("contr.sum", "contr.poly"))
@@ -420,9 +420,9 @@ token <- "X"
   # Plot N2O yield, including possible main (Month, VegZone), random (SampleID), and interactive effects. 
   # Note y-axis is presented on a log-scale
   plot_grid(
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=(N2O.yield+0.1)))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=(N2O.yield+0.1)))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=(N2O.yield+0.1),color=VegZone))+scale_y_log10()+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=N2O.yield))+scale_y_log10()+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=N2O.yield))+scale_y_log10()+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=N2O.yield,color=VegZone))+scale_y_log10()+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
     # interaction plot:
     ggplot(data, aes(x = Date, y = log(N2O.yield+0.1), color = VegZone)) + geom_boxplot(size=0.5) +
       stat_summary(fun = mean, geom = "line", aes(group = VegZone), size = 1.2) + theme_bw() +
@@ -470,7 +470,6 @@ token <- "X"
   data %>% 
     group_by(VegZone) %>% select(VegZone,N2O.yield) %>%
     summarise_each(funs(mean(., na.rm=T), n = sum(!is.na(.)), se = sd(., na.rm=T)/sqrt(sum(!is.na(.)))), N2O.yield)  
-  
   
 ## Look at N2O yields as scatterplots between potential denitrification rate and N2O production rate:
   
@@ -531,6 +530,13 @@ token <- "X"
   climate.dat <- readRDS("./output/data_processed/Table1_EnvironmentalConditions.rds")
   climate.dat.long <- climate.dat %>% tidyr::gather(Antcdt_rainfall,value_mm, roll_7day:roll_30day)
   
+## Create new variable that substitutes NH4 values below lab MDL to 1/2MDL (also create flag indicating the observation is below MDL):
+  data$NH4_wet_normalized_MDL <- (data$NH4.ppm.N.with.1.2MDL*(25/1000))/data$KCl.extract.soil.weight..wet..g.
+  data$NH4_below_MDL <- ifelse(data$NH4.ppm.N==data$NH4.ppm.N.with.1.2MDL,"FALSE","TRUE")
+  
+  # take a look:
+  data[c(15:18),c("NH4.ppm.N","NH4.ppm.N.with.1.2MDL","NH4_wet_normalized","NH4_wet_normalized_MDL","NH4_below_MDL")]  
+  
 ## Plot environmental covariate data
   
   # Boxplots of environmental variables over seasons:
@@ -541,7 +547,7 @@ token <- "X"
       labs(x="Month",y=expression(Antecedent~precip~(mm))),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=LOI))+geom_point(aes(x=Date,y=LOI,color=VegZone))+theme_bw(),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=SO4_wet_normalized))+geom_point(aes(x=Date,y=SO4_wet_normalized,color=VegZone))+theme_bw()+theme(legend.position="none"),
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4_wet_normalized))+geom_point(aes(x=Date,y=NH4_wet_normalized,color=VegZone))+theme_bw()+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4_wet_normalized_MDL))+geom_point(aes(x=Date,y=NH4_wet_normalized_MDL,color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=Soil.Moisture.Fraction))+geom_point(aes(x=Date,y=Soil.Moisture.Fraction,color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_boxplot(aes(x=Date,y=Belowground.Biomass.Weight..g.))+geom_point(aes(x=Date,y=Belowground.Biomass.Weight..g.,color=VegZone))+labs(y=expression(Belowground~biomass~(g)))+theme_bw()+theme(legend.position="none"),
     ncol=2
@@ -550,7 +556,7 @@ token <- "X"
   # Scatterplots between environmental variables and potential denitrification rates:
   plot_grid(
     data %>% ggplot() + geom_point(aes(x=SO4_wet_normalized,y=log(DenitRate),color=VegZone))+theme_bw()+theme(legend.position="none"),
-    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized,y=log(DenitRate),color=VegZone))+theme_bw()+theme(legend.position="none"),
+    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized_MDL,y=log(DenitRate),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=LOI,y=log(DenitRate),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Soil.Moisture.Fraction,y=log(DenitRate),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Belowground.Biomass.Weight..g.,y=log(DenitRate),color=VegZone))+theme_bw()+labs(x=expression(Belowground~biomass~(g))),
@@ -559,7 +565,7 @@ token <- "X"
   # Scatterplots between environmental variables and N2O production rates:
   plot_grid(
     data %>% ggplot() + geom_point(aes(x=SO4_wet_normalized,y=log(N2ORate+1), color=VegZone))+theme_bw()+theme(legend.position="none"),
-    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized,y=log(N2ORate+1),color=VegZone))+theme_bw()+theme(legend.position="none"),
+    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized_MDL,y=log(N2ORate+1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=LOI,y=log(N2ORate+1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Soil.Moisture.Fraction,y=log(N2ORate+1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Belowground.Biomass.Weight..g.,y=log(N2ORate+1),color=VegZone))+theme_bw()+labs(x=expression(Belowground~biomass~(g))),
@@ -568,7 +574,7 @@ token <- "X"
   # Scatterplots between environmental variables and N2O yield:
   plot_grid(
     data %>% ggplot() + geom_point(aes(x=SO4_wet_normalized,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+theme(legend.position="none"),
-    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+theme(legend.position="none"),
+    data %>% ggplot() + geom_point(aes(x=NH4_wet_normalized_MDL,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=LOI,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Soil.Moisture.Fraction,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+theme(legend.position="none"),
     data %>% ggplot() + geom_point(aes(x=Belowground.Biomass.Weight..g.,y=log(N2O.yield+0.1),color=VegZone))+theme_bw()+labs(x=expression(Belowground~biomass~(g))),
@@ -634,27 +640,27 @@ token <- "X"
   # Plot soil NH4 (mg N per g wet soil), including possible main (Month, VegZone), random (SampleID), and interactive effects. 
   # Note y-axis is presented on a log-scale
   plot_grid(
-    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4_wet_normalized))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=NH4_wet_normalized))+scale_y_log10()+theme_bw(),
-    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=NH4_wet_normalized,color=VegZone))+scale_y_log10()+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
+    data %>% ggplot() + geom_boxplot(aes(x=Date,y=NH4_wet_normalized_MDL))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=NH4_wet_normalized_MDL))+theme_bw(),
+    data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=NH4_wet_normalized_MDL,color=VegZone))+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
     # interaction plot:
-    ggplot(data, aes(x = Date, y = log(NH4_wet_normalized), color = VegZone)) + geom_boxplot(size=0.5) +
+    ggplot(data, aes(x = Date, y = NH4_wet_normalized_MDL, color = VegZone)) + geom_boxplot(size=0.5) +
       stat_summary(fun = mean, geom = "line", aes(group = VegZone), size = 1.2) + theme_bw() +
       scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")),
     ncol=2,nrow=2,align="h")
   
 ## Check - is the experimental design balanced?
-  table(data[which(!is.na(data$NH4_wet_normalized)),]$VegZone, data[which(!is.na(data$NH4_wet_normalized)),]$Date)
+  table(data[which(!is.na(data$NH4_wet_normalized_MDL)),]$VegZone, data[which(!is.na(data$NH4_wet_normalized_MDL)),]$Date)
   
 ## Analyze data across season and salt marsh zone:
   
   #Two-way ANOVA with SampleID (i.e. sub-plot) as a random effect, assuming that samples from the same sampleID are correlated over time. 
   #Note that soil NH4 data were natural log-transformed prior to analysis.  
-  nh4 = lme4::lmer(log(NH4_wet_normalized) ~ Date * VegZone + (1|Sample.ID),data=data,REML=TRUE)
+  nh4 = lme4::lmer(log(NH4_wet_normalized_MDL) ~ Date * VegZone + (1|Sample.ID),data=data,REML=TRUE)
   anova(nh4)
   # run nh4 model again using lmerTest Satterthwaite approximation of degrees of freedom in lmerTest:
   options(contrasts = c("contr.sum", "contr.poly"))
-  nh4 <- lmerTest::lmer(log(NH4_wet_normalized) ~ Date*VegZone + (1|Sample.ID), data = data,REML = TRUE)
+  nh4 <- lmerTest::lmer(log(NH4_wet_normalized_MDL) ~ Date*VegZone + (1|Sample.ID), data = data,REML = TRUE)
   anova(nh4)
   
   # Pairwise comparisons by month*vegetation zone: 
@@ -672,7 +678,7 @@ token <- "X"
   hist(res.nh4,freq=FALSE)
   plot(fitted(nh4),residuals(nh4))
   shapiro.test(res.nh4)                                                 # test assumption of normality
-  car::leveneTest(log(NH4_wet_normalized) ~ unique.trt, data = data)    # test assumption of homogeneity of variance
+  car::leveneTest(log(NH4_wet_normalized_MDL) ~ unique.trt, data = data)    # test assumption of homogeneity of variance
   
   # Log transformation improves the normality and homoscedasticity of the model residuals
   # Q-Q plot looks OK, and there's no obvious patterning in the residuals plot
@@ -690,7 +696,7 @@ token <- "X"
     data %>% ggplot() + geom_boxplot(aes(x=VegZone,y=Soil.Moisture.Fraction))+theme_bw(),
     data %>% ggplot() + geom_boxplot(aes(x=Sample.ID,y=Soil.Moisture.Fraction,color=VegZone))+theme_bw()+scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+theme(legend.position="none"),
     # interaction plot:
-    ggplot(data, aes(x = Date, y = (Soil.Moisture.Fraction), color = VegZone)) + geom_boxplot(size=0.5) +
+    ggplot(data, aes(x = Date, y = Soil.Moisture.Fraction, color = VegZone)) + geom_boxplot(size=0.5) +
       stat_summary(fun = mean, geom = "line", aes(group = VegZone), size = 1.2) + theme_bw() +
       scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")),
     ncol=2,nrow=2,align="h")
@@ -781,7 +787,7 @@ token <- "X"
   
 
 ## ============================================================================= ## 
-##                            FIGURE 3: SOIL CONDITIONS                          ##
+##                            FIGURE 2: SOIL CONDITIONS                          ##
 ## ============================================================================= ##    
   
   # Rename variables for figure labels:
@@ -790,7 +796,7 @@ token <- "X"
   data$VegZone2 <- factor(data$VegZone,levels=c("LM","HM","PH"),
                           labels=c("Low Marsh","High Marsh", "Phragmites"))
   
-  fig3.moisture <- ggplot(data) + 
+  fig2.moisture <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=Soil.Moisture.Fraction),alpha=.7)+
     facet_grid(. ~ VegZone2)+
     coord_cartesian(ylim=c(0.5,1))+
@@ -807,7 +813,7 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_text(size=12,margin = margin(.1, 0, .1, 0, "cm")))
   
-  fig3.so4 <- ggplot(data) + 
+  fig2.so4 <- ggplot(data) + 
     geom_boxplot(aes(x=Month2,y=SO4_wet_normalized),alpha=.7)+
     facet_grid(. ~ VegZone2)+
     labs(x="Month",y=expression(atop(Sulfate~concentration, (mg~SO[4]^2^"-"~"/"~g~wet~soil))))+
@@ -822,11 +828,11 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_blank())
   
-  fig3.nh4 <- ggplot(data) + 
-    geom_boxplot(aes(x=Month2,y=NH4_wet_normalized),alpha=.7)+
+  fig2.nh4 <- ggplot(data) + 
+    geom_boxplot(aes(x=Month2,y=NH4_wet_normalized_MDL),alpha=.7)+
     facet_grid(. ~ VegZone2)+
     #scale_y_continuous(trans = "log",breaks = c(0.003,0.010,0.030)) +
-    labs(x="Month",y=expression(atop(Ammonium~concentration, (mg~NH[4]^"+"~"/"~g~wet~soil))))+
+    labs(x="Month",y=expression(atop(Ammonium~concentration, (mg~NH[4]^"+"-N~"/"~g~wet~soil))))+
     theme_bw() +
     theme(legend.position="right",
           axis.title = element_text(size=11),
@@ -838,10 +844,10 @@ token <- "X"
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 0)),
           strip.text.x = element_blank())
   
-  fig3 <- fig3.moisture / fig3.so4 / fig3.nh4
+  fig2 <- fig2.moisture / fig2.so4 / fig2.nh4
   
-  jpeg("./output/figures/Figure3.jpg",width = 6.75,height=6.75,units = "in",res=300)
-  print(fig3)
+  jpeg("./output/figures/Figure2.jpg",width = 6.75,height=6.75,units = "in",res=300)
+  print(fig2)
   dev.off()
 
 
@@ -874,8 +880,8 @@ token <- "X"
     #scale_y_continuous(trans = "log",breaks = c(1,10,100,1000)) +
     labs(y=expression(atop(paste(N[2],"O")~production, (ng~N~"/"~hr~"/"~g~dry~soil))),
          x="Month")+
-    theme_bw() +
-    theme(legend.position="right",
+    theme_bw() + 
+    theme(legend.position="none",
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.title = element_text(size=11),
